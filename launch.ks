@@ -11,24 +11,22 @@ IF BODY:ATM:EXISTS AND tarAlt < BODY:ATM:HEIGHT {
 	SET tarAlt TO BODY:ATM:HEIGHT + tarAlt.
 } 
 
-// Throttle PIDLoop :: Elsewhere this becomes 50s to apoapsis.
-SET thrMin TO 0.05.
+// Throttle PIDLoop :: Elsewhere this becomes time to apoapsis.
+SET thrMin TO 0.
 SET thrMax TO 1.
 SET thrKp TO 0.5.
 SET thrKi TO 0.01.
 SET thrKd TO 0.1.
 SET thrPID TO PIDLoop(thrKp, thrKi, thrKd, thrMin, thrMax).
-SET thrPID:SETPOINT TO 50. 
+SET thrPID:SETPOINT TO 45. 
 // Q PIDLoop :: Keeps pressure from ripping up / cooking rocket.
-SET qMin TO 0.05.
+SET qMin TO 0.
 SET qMax TO 1.
 SET qKp TO 0.5.
 SET qKi TO 0.01.
 SET qKd TO 0.1.
 SET qPID TO PIDLoop(qKp, qKi, qKd, qMin, qMax).
-SET qPID:SETPOINT TO 25. 
-
-IF BODY:ATM:EXISTS WHEN ALTITUDE > BODY:ATM:HEIGHT THEN LOCK STEERING TO PROGRADE. 
+SET qPID:SETPOINT TO 35. 
 
 // Make sure we go fast enough not to tip over.
 WHEN SHIP:VELOCITY:SURFACE:MAG > 150 THEN {
@@ -51,6 +49,7 @@ kNotify ("Launching").
 STAGE.
 WAIT 5.
 GEAR OFF.
+IF BODY:ATM:EXISTS WHEN ALTITUDE > BODY:ATM:HEIGHT THEN PANELS ON.
 
 // Throttle PIDLoop, time to apoapsis.
 UNTIL SHIP:APOAPSIS > tarAlt {
@@ -60,18 +59,6 @@ UNTIL SHIP:APOAPSIS > tarAlt {
 }
 SET thr TO 0.
 
-// Works well at low TWR.
-// still experimental, tends to break
-LOCK STEERING TO PROGRADE.
-WAIT UNTIL ETA:APOAPSIS < 15.
-SET thrPID:SETPOINT TO 15.
-kNotify("Circularizing").
-UNTIL OBT:ECCENTRICITY < .005 {
-	SET thr TO MIN(thrPID:UPDATE(TIME:SECONDS, ETA:APOAPSIS),OBT:ECCENTRICITY).
-	WAIT 0.001.
-}
-SET thr TO 0.
+cirE(1, 0.003).
+
 kNotify("Done").
-SET SHIP:CONTROL:PILOTMAINTHROTTLE TO 0.
-UNLOCK THROTTLE.
-UNLOCK STEERING.
