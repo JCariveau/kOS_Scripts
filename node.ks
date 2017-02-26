@@ -1,5 +1,5 @@
 // executes the next node for the current vessel
-
+// much of this is from the kOS docs, debugged and cleaned up over time
 function kNotify {
 	parameter mText.
 	hudText ("kOS: " + mText, 2, 2, 30, yellow, true).
