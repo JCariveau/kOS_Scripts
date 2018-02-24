@@ -1,5 +1,9 @@
-// executes the next node for the current vessel
-// much of this is from the kOS docs, debugged and cleaned up over time
+// Executes the next node for the current vessel
+// Much of this is from the kOS docs, debugged and cleaned up over time
+// Added boolian autowarp option to the file.
+
+parameter wrp is false.
+
 function kNotify {
 	parameter mText.
 	hudText ("kOS: " + mText, 2, 2, 30, yellow, true).
@@ -28,19 +32,22 @@ set max_acc to ship:maxthrust/ship:mass.
 // the change in mass over time as you burn.
 set burn_duration to nd:deltav:mag/max_acc.
 kNotify("Crude Estimated burn duration: " + round(burn_duration,1) + " seconds.").
-wait until nd:eta <= (burn_duration/2 + 60).
-set warp to 0.
-sas off. // SAS fights the 'cooked' controls.
-set np to nd:deltav. //points to node, don't care about the roll direction.
 kNotify("Turning the vessel into the node.").
+sas off. // SAS fights the 'cooked' controls.
+set np to nd:deltav. // points to node,
+lock steering to np. // don't worry about the roll direction.
 // TODO: now we need to wait until the burn vector and ship's facing are aligned
-lock steering to np.
+if wrp {
+	wait 15. // wait until ship:facing = np??
+	// TODO: experimental, Add Waiting
+	warpto(time:seconds + nd:eta - (burn_duration/2 + 60)).
+}
 
 //the ship is facing the right direction, let's wait for our burn time
 kNotify("Waiting to burn.").
 wait until nd:eta <= (burn_duration/2).
 
-//we only need to lock throttle once to a certain variable in the 
+//we only need to lock throttle once to a certain variable in the
 //beginning of the loop, and adjust only the variable itself inside it
 set tset to 0.
 lock throttle to tset.
@@ -57,7 +64,7 @@ until done
     //when there is less than 1 second - decrease the throttle linearly
     set tset to min(nd:deltav:mag/max_acc, 1).
 
-    //here's the tricky part, we need to cut the throttle as soon as our 
+    //here's the tricky part, we need to cut the throttle as soon as our
 	//nd:deltav and initial deltav start facing opposite directions
     //this check is done via checking the dot product of those 2 vectors
     if vdot(dv0, nd:deltav) < 0
@@ -71,7 +78,7 @@ until done
     if nd:deltav:mag < 0.1
     {
         kNotify("Finalizing burn, remaining dv: " + round(nd:deltav:mag,1) + "m/s, vdot: " + round(vdot(dv0, nd:deltav),1)).
-        
+
 		//we burn slowly until our node vector starts to drift significantly from initial vector
         //this usually means we are on point
         wait until vdot(dv0, nd:deltav) < 0.5.
@@ -90,4 +97,3 @@ wait 1.
 
 //we no longer need the maneuver node
 remove nd.
-

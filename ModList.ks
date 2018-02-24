@@ -1,7 +1,5 @@
-// Lists actions available to
-// all parts of the current craft
-// to a text file. EXTREMELY spammy,
-// but quick and useful listing.
+// Lists actions available to all parts of the current craft
+// to a text file. EXTREMELY spammy, but quick and useful listing.
 
 DECLARE FILE IS "0:/" + SHIPNAME + "-ModList.txt".
 
