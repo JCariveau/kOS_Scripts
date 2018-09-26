@@ -5,8 +5,8 @@
 parameter wrp is false.
 
 function kNotify {
-	parameter mText.
-	hudText ("kOS: " + mText, 2, 2, 30, yellow, true).
+	parameter mText, repeat is true.
+	hudText ("kOS: " + mText, 2, 2, 30, yellow, repeat).
 }
 
 set nd to nextnode.
@@ -90,6 +90,7 @@ until done
 }
 wait 1.
 //set throttle to 0 just in case.
+set tset to 0.
 set ship:control:pilotmainthrottle to 0.
 unlock steering.
 unlock throttle.
